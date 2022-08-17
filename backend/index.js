@@ -1,53 +1,53 @@
 const express = require("express");
-const app = express();
-app.use(express.json());
+const { MongoClient } = require('mongodb');
 
-app.get("/", function (req, res) {
-  res.send("Hello, World!");
-});
+const url = 'mongodb://localhost:27017';
+const dbName = 'db-nss';
 
-app.get("/oi", function (req, res) {
-  res.send("Olá, mundo!");
-});
+async function main(){
+  console.log('Conectando com Banco de Dados...');
+  const dbClient = await MongoClient.connect(url);
+  const db = dbClient.db(dbName);
+  const cll = db.collection('cll-scores');
+  console.log('Conexão com Banco de Dados Realizada com Sucesso');
 
-const lista = [
-  {
-    id:1,
-    nome:'Sergio',
-    pontos: 90
-  },
-  {
-    id:2,
-    nome:'Fulano',
-    pontos: 80
-  },
-  {
-    id:3,
-    nome:'Ciclano',
-    pontos: 70
-  }
-];
+  const app = express();
+  app.use(express.json());
 
-app.get("/scores",  (req, res) => {
-  res.send(lista);
-});
+  //PAGINA INICIAL
+  app.get("/", (req, res) => {
+    res.send("Hello, World!");
+  });
 
-app.get("/score/:id",  (req, res) => {
-  const {id} = req.params;
-  res.send(lista[id]);
-});
+  //LISTAR TODOS OS REGISTROS
+  app.get("/scores",  async (req, res) => {
+    const itens = await cll.find().toArray();
+    res.send(itens);
+  });
 
-app.post("/score",  (req, res) => {
-  const item = req.body;
-  lista.push({
-    id: lista.length+1,
-    nome: item.nome,
-    pontos: item.pontos
-  })
+  //LISTAR 10 REGISTROS (DECRESCENTE)
+  app.get("/scores10",  async (req, res) => {
+    const itens = await cll
+      .find()
+      .sort({ pontos: -1 })
+      .limit(10)
+      .toArray();
+    res.send(itens);
+  });
 
+  //ADICIONAR REGISTRO
+  app.post("/score", async (req, res) => {
+    const item = req.body;
+    await cll.insertOne(item);
+    res.send(item);
+  });
 
-  res.send(item);
-});
+  /*app.get("/score/:id",  (req, res) => {
+    const {id} = req.params;
+    res.send(lista[id]);
+  });*/
 
+  app.listen(3000);
+}
 
-app.listen(3000);
+main();
