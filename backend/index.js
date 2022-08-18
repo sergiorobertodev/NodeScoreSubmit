@@ -6,9 +6,9 @@ const dbName = 'db-nss';
 
 async function main(){
   console.log('Conectando com Banco de Dados...');
-  const dbClient = await MongoClient.connect(url);
+  /*const dbClient = await MongoClient.connect(url);
   const db = dbClient.db(dbName);
-  const cll = db.collection('cll-scores');
+  const cll = db.collection('cll-scores');*/
   console.log('Conexão com Banco de Dados Realizada com Sucesso');
 
   const app = express();
